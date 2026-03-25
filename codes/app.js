@@ -1,32 +1,20 @@
 /**
  * NewsWire — Real-Time News Feed
  * Laboratory Practical 2: News API Integration
- *
- * API: NewsAPI.org
- * Docs: https://newsapi.org/docs
- *
- * Handles:
- *  - Category and keyword-based article fetching
- *  - Skeleton loading states
- *  - Error handling (no results, API failure, missing key)
- *  - Article card rendering with images, description, source, date
  */
 
 // ─────────────────────────────────────────────
 // CONFIG
 // ─────────────────────────────────────────────
-// Requests go to our local Node.js proxy (server.js) which forwards
-// them to NewsAPI.org server-side — this bypasses the Developer plan
-// CORS restriction that blocks direct browser requests.
 const PROXY_URL    = "/api/news";
-const MIN_ARTICLES = 5; // Minimum required display count per rubric
+const API_KEY      = "374833e57ee34ec5ade12925b13d25a3"; // hardcoded key
+const MIN_ARTICLES = 5;
 
 // ─────────────────────────────────────────────
 // DOM REFERENCES
 // ─────────────────────────────────────────────
 const categorySelect = document.getElementById("categorySelect");
 const keywordInput   = document.getElementById("keywordInput");
-const apiKeyInput    = document.getElementById("apiKeyInput");
 const fetchBtn       = document.getElementById("fetchBtn");
 const newsGrid       = document.getElementById("newsGrid");
 const statusBar      = document.getElementById("statusBar");
@@ -36,12 +24,11 @@ const statusBar      = document.getElementById("statusBar");
 // ─────────────────────────────────────────────
 function showStatus(message, type = "info") {
   statusBar.textContent = message;
-  statusBar.className   = `status-bar ${type}`;
-  statusBar.style.display = "flex";
+  statusBar.className   = `status ${type}`;
 }
 
 function hideStatus() {
-  statusBar.className = "status-bar hidden";
+  statusBar.className = "status hidden";
 }
 
 // ─────────────────────────────────────────────
@@ -57,7 +44,7 @@ function formatDate(dateStr) {
 }
 
 // ─────────────────────────────────────────────
-// SKELETON LOADERS (UX while fetching)
+// SKELETON LOADERS
 // ─────────────────────────────────────────────
 function showSkeletons(count = 6) {
   newsGrid.innerHTML = "";
@@ -139,13 +126,10 @@ function escapeHtml(str) {
 }
 
 // ─────────────────────────────────────────────
-// BUILD API URL — points to local proxy
+// BUILD API URL
 // ─────────────────────────────────────────────
-function buildApiUrl(apiKey, category, keyword) {
-  // All requests go to our local server.js proxy at /api/news
-  // The proxy forwards them to NewsAPI.org server-side,
-  // avoiding the CORS block on the Developer plan.
-  const params = new URLSearchParams({ apiKey: apiKey.trim() });
+function buildApiUrl(category, keyword) {
+  const params = new URLSearchParams({ apiKey: API_KEY });
 
   if (keyword && keyword.trim()) {
     params.set("q", keyword.trim());
@@ -160,35 +144,25 @@ function buildApiUrl(apiKey, category, keyword) {
 // MAIN: Fetch News
 // ─────────────────────────────────────────────
 async function fetchNews() {
-  const apiKey   = apiKeyInput.value.trim();
   const category = categorySelect.value;
   const keyword  = keywordInput.value.trim();
-
-  // ── Validation ──
-  if (!apiKey) {
-    showStatus("⚠️ Please enter your NewsAPI key. You can get one free at newsapi.org/register", "error");
-    apiKeyInput.focus();
-    return;
-  }
 
   if (!category && !keyword) {
     showStatus("⚠️ Please select a category or enter a keyword before fetching.", "error");
     return;
   }
 
-  // ── Loading State ──
   fetchBtn.disabled = true;
   fetchBtn.querySelector(".btn-text").textContent = "Fetching…";
   showSkeletons(6);
   showStatus("⏳ Fetching latest news articles…", "loading");
 
-  const url = buildApiUrl(apiKey, category, keyword);
+  const url = buildApiUrl(category, keyword);
 
   try {
     const response = await fetch(url);
     const data     = await response.json();
 
-    // ── API-level error handling ──
     if (!response.ok || data.status === "error") {
       const msg = data.message || `HTTP error: ${response.status}`;
       handleFetchError(msg, response.status);
@@ -210,15 +184,12 @@ async function fetchNews() {
       return;
     }
 
-    // ── Render Results ──
     newsGrid.innerHTML = "";
     articles.forEach((article, i) => {
       newsGrid.appendChild(renderArticle(article, i));
     });
 
-    const label = keyword
-      ? `keyword: "${keyword}"`
-      : `category: ${category}`;
+    const label = keyword ? `keyword: "${keyword}"` : `category: ${category}`;
     showStatus(
       `✅ ${articles.length} articles loaded for ${label}` +
       (articles.length < MIN_ARTICLES ? ` (fewer than ${MIN_ARTICLES} available)` : ""),
@@ -247,25 +218,23 @@ function handleFetchError(message, statusCode = null) {
     </div>`;
 
   let statusMsg = `❌ Error: ${message}`;
-  if (statusCode === 401) statusMsg = "❌ Invalid API key. Please check your NewsAPI key and try again.";
-  if (statusCode === 429) statusMsg = "❌ Rate limit reached. Please wait a moment before fetching again.";
+  if (statusCode === 401) statusMsg = "❌ Invalid API key.";
+  if (statusCode === 429) statusMsg = "❌ Rate limit reached. Please wait before fetching again.";
   showStatus(statusMsg, "error");
 }
 
 function getErrorHelp(code) {
   const tips = {
-    401: "Your API key may be invalid or expired. Visit newsapi.org to verify.",
+    401: "The API key may be invalid or expired.",
     429: "Too many requests. Free-tier allows 100 requests/day.",
     426: "Upgrade required. Some endpoints require a paid plan.",
   };
-  return tips[code] || "Check your internet connection and API key, then try again.";
+  return tips[code] || "Check your internet connection and try again.";
 }
 
 // ─────────────────────────────────────────────
 // EVENT LISTENERS
 // ─────────────────────────────────────────────
-
-// Clear keyword if category selected (and vice versa)
 categorySelect.addEventListener("change", () => {
   if (categorySelect.value) keywordInput.value = "";
 });
@@ -274,17 +243,6 @@ keywordInput.addEventListener("input", () => {
   if (keywordInput.value.trim()) categorySelect.value = "";
 });
 
-// Allow pressing Enter to fetch
 keywordInput.addEventListener("keydown", (e) => {
   if (e.key === "Enter") fetchNews();
-});
-
-// Restore saved API key from sessionStorage (convenience)
-window.addEventListener("DOMContentLoaded", () => {
-  const saved = sessionStorage.getItem("nw_apikey");
-  if (saved) apiKeyInput.value = saved;
-});
-
-apiKeyInput.addEventListener("input", () => {
-  sessionStorage.setItem("nw_apikey", apiKeyInput.value);
 });

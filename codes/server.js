@@ -1,15 +1,3 @@
-/**
- * NewsWire — Local Dev Server + NewsAPI Proxy
- * Laboratory Practical 2
- *
- * Run:  node server.js
- * Open: http://localhost:3000
- *
- * This server does two things:
- *  1. Serves the static frontend files (index.html, style.css, app.js)
- *  2. Proxies /api/news requests to NewsAPI.org so the browser
- *     never hits NewsAPI directly (fixes the "Developer plan" CORS block)
- */
 
 const http  = require("http");
 const https = require("https");

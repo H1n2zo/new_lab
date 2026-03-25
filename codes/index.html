@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>NewsWire — Real-Time News Feed</title>
+  <link rel="stylesheet" href="style.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+</head>
+<body>
+
+  <!-- HEADER -->
+  <header class="site-header">
+    <div class="header-inner">
+      <div class="logo">
+        <span class="logo-icon">📡</span>
+        <span class="logo-text">NewsWire</span>
+      </div>
+      <p class="tagline">Real-Time News Integration · Laboratory Practical 2</p>
+    </div>
+  </header>
+
+  <!-- CONTROLS -->
+  <section class="controls-section">
+    <div class="controls-inner">
+      <h1 class="section-title">Latest Headlines</h1>
+      <p class="section-subtitle">Select a category or enter a keyword to fetch live news articles.</p>
+
+      <div class="controls-row">
+        <!-- Category Dropdown -->
+        <div class="control-group">
+          <label for="categorySelect">Category</label>
+          <select id="categorySelect">
+            <option value="">— Select Category —</option>
+            <option value="technology">💻 Technology</option>
+            <option value="sports">⚽ Sports</option>
+            <option value="business">💼 Business</option>
+            <option value="entertainment">🎬 Entertainment</option>
+            <option value="health">🏥 Health</option>
+            <option value="science">🔬 Science</option>
+            <option value="general">🌐 General</option>
+          </select>
+        </div>
+
+        <!-- Keyword Input -->
+        <div class="control-group">
+          <label for="keywordInput">Or Search Keyword</label>
+          <input
+            type="text"
+            id="keywordInput"
+            placeholder="e.g. artificial intelligence, NASA..."
+          />
+        </div>
+
+        <!-- API Key Input -->
+        <div class="control-group">
+          <label for="apiKeyInput">Your NewsAPI Key <a href="https://newsapi.org/register" target="_blank" class="get-key-link">Get one free →</a></label>
+          <input
+            type="text"
+            id="apiKeyInput"
+            placeholder="Paste your API key here..."
+          />
+        </div>
+
+        <!-- Fetch Button -->
+        <button id="fetchBtn" class="fetch-btn" onclick="fetchNews()">
+          <span class="btn-text">Fetch News</span>
+          <span class="btn-icon">→</span>
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <!-- STATUS BAR -->
+  <div id="statusBar" class="status-bar hidden"></div>
+
+  <!-- RESULTS -->
+  <main class="results-section">
+    <div id="newsGrid" class="news-grid">
+      <!-- Placeholder state -->
+      <div class="placeholder-state" id="placeholderState">
+        <div class="placeholder-icon">🗞️</div>
+        <p>Enter a category or keyword above and click <strong>Fetch News</strong> to load articles.</p>
+      </div>
+    </div>
+  </main>
+
+  <!-- FOOTER -->
+  <footer class="site-footer">
+    <p>NewsWire · Laboratory Practical 2 · API Integration · Data from <a href="https://newsapi.org" target="_blank">NewsAPI.org</a></p>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>
